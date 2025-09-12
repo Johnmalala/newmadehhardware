@@ -96,7 +96,7 @@ const PurchaseDetailsModal: React.FC<PurchaseDetailsModalProps> = ({ isOpen, onC
       ) : (
         <div>
           <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-            <div><strong>Date:</strong> {new Date(purchase.date).toLocaleString('en-GB')}</div>
+            <div><strong>Date:</strong> {new Date(purchase.created_at).toLocaleString('en-GB')}</div>
             <div><strong>Total:</strong> <span className="font-bold text-lg">£{purchase.total_amount.toFixed(2)}</span></div>
             <div><strong>Payment Method:</strong> {purchase.payment_method}</div>
             <div><strong>Status:</strong> <span className={`font-semibold ${purchase.payment_status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>{purchase.payment_status}</span></div>

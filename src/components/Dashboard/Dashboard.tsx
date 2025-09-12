@@ -38,11 +38,20 @@ const Dashboard: React.FC = () => {
         .eq('payment_status', 'Unpaid');
 
       // Get recent purchases
-      const { data: recentPurchases } = await supabase
+      const { data: recentPurchases, error: recentError } = await supabase
         .from('purchases')
-        .select('*')
+        .select(`
+          *,
+          admins (
+            username
+          )
+        `)
         .order('created_at', { ascending: false })
         .limit(5);
+
+      if (recentError) {
+        console.error('Error loading recent purchases:', recentError);
+      }
 
       setStats({
         totalProducts: productsCount || 0,
@@ -150,7 +159,7 @@ const Dashboard: React.FC = () => {
               {stats.recentPurchases.map((purchase) => (
                 <tr key={purchase.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(purchase.date).toLocaleDateString('en-GB')}
+                    {new Date(purchase.created_at).toLocaleDateString('en-GB')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     £{purchase.total_amount.toFixed(2)}

@@ -19,7 +19,8 @@ const ReportsPage: React.FC = () => {
     const { data, error } = await supabase
       .from('purchases')
       .select('*')
-      .eq('payment_status', 'Paid'); // Reports are only for paid purchases
+      .eq('payment_status', 'Paid') // Reports are only for paid purchases
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error loading purchases for reports:', error);
@@ -35,7 +36,7 @@ const ReportsPage: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     return purchases.filter(p => {
-      const purchaseDate = new Date(p.date);
+      const purchaseDate = new Date(p.created_at);
       const dateMatch =
         dateFilter === 'all' ||
         (dateFilter === 'today' && purchaseDate >= today) ||
@@ -57,7 +58,7 @@ const ReportsPage: React.FC = () => {
   const downloadReport = () => {
     const reportData = filteredPurchases.map(p => ({
       'Purchase ID': p.id,
-      'Date': new Date(p.date).toLocaleDateString('en-GB'),
+      'Date': new Date(p.created_at).toLocaleDateString('en-GB'),
       'Total Amount': p.total_amount.toFixed(2),
       'Payment Method': p.payment_method,
       'Payment Status': p.payment_status,
@@ -171,7 +172,7 @@ const ReportsPage: React.FC = () => {
                 <tr><td colSpan={3} className="text-center py-8">Loading report data...</td></tr>
               ) : filteredPurchases.map(p => (
                 <tr key={p.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(p.date).toLocaleDateString('en-GB')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(p.created_at).toLocaleDateString('en-GB')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">£{p.total_amount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{p.payment_method}</td>
                 </tr>

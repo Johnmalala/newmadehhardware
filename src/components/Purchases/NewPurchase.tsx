@@ -93,21 +93,44 @@ const NewPurchase: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const items_to_purchase = cart.map(item => ({
-        p_product_id: item.product.id,
-        p_quantity: item.quantity,
-        p_price: item.product.price,
+      // Create the purchase record
+      const { data: purchaseData, error: purchaseError } = await supabase
+        .from('purchases')
+        .insert({
+          total_amount: cartTotal,
+          payment_method: paymentMethod,
+          payment_status: paymentStatus,
+          created_by: admin.id
+        })
+        .select()
+        .single();
+
+      if (purchaseError) throw purchaseError;
+
+      // Create purchase items
+      const purchaseItems = cart.map(item => ({
+        purchase_id: purchaseData.id,
+        product_id: item.product.id,
+        quantity: item.quantity,
+        price: item.product.price
       }));
 
-      const { error } = await supabase.rpc('create_purchase', {
-        p_created_by: admin.id,
-        p_total_amount: cartTotal,
-        p_payment_method: paymentMethod,
-        p_payment_status: paymentStatus,
-        items: items_to_purchase,
-      });
+      const { error: itemsError } = await supabase
+        .from('purchase_items')
+        .insert(purchaseItems);
 
-      if (error) throw error;
+      if (itemsError) throw itemsError;
+
+      // Update product stock
+      for (const item of cart) {
+        const newStock = item.product.stock - item.quantity;
+        const { error: stockError } = await supabase
+          .from('products')
+          .update({ stock: newStock })
+          .eq('id', item.product.id);
+
+        if (stockError) throw stockError;
+      }
 
       setToast({ message: 'Purchase completed successfully!', type: 'success' });
       setCart([]);
@@ -115,12 +138,7 @@ const NewPurchase: React.FC = () => {
 
     } catch (error) {
       console.error('Error completing purchase:', error);
-      const rpcError = error as any;
-      // Provide a more user-friendly error message from the database function
-      const errorMessage = rpcError.message?.includes('Not enough stock for product')
-        ? rpcError.message
-        : 'An error occurred during the purchase.';
-      setToast({ message: errorMessage, type: 'error' });
+      setToast({ message: 'An error occurred during the purchase.', type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -200,7 +218,9 @@ const NewPurchase: React.FC = () => {
                       type="number"
                       value={item.quantity}
                       onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value) || 1)}
-                      className="w-12 text-center border-gray-300 rounded-md mx-2"
+                      className="w-12 text-center border border-gray-300 rounded-md mx-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      min="1"
+                      max={item.product.stock}
                     />
                     <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 text-gray-500 hover:text-gray-800"><Plus size={16} /></button>
                   </div>

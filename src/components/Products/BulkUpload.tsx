@@ -63,12 +63,12 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
         errors.push({ row: rowNum, field: 'Category', message: 'Category must not be empty', value: row.Category || '' });
       }
 
-      const price = parseFloat(row.Price);
+      const price = row.Price ? parseFloat(row.Price) : NaN;
       if (isNaN(price) || price <= 0) {
         errors.push({ row: rowNum, field: 'Price', message: 'Price must be a positive number', value: row.Price || '' });
       }
 
-      const stock = parseInt(row.Stock, 10);
+      const stock = row.Stock ? parseInt(row.Stock, 10) : NaN;
       if (isNaN(stock) || stock < 0) {
         errors.push({ row: rowNum, field: 'Stock', message: 'Stock must be a whole number ≥ 0', value: row.Stock || '' });
       }

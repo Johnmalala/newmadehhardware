@@ -70,14 +70,14 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
       }
 
       if (row.Price && row.Price.trim() !== '') {
-        const price = parseFloat(row.Price);
+        const price = parseFloat(row.Price.toString());
         if (isNaN(price) || price <= 0) {
           errors.push({ row: rowNum, field: 'Price', message: 'Price must be a positive number', value: row.Price });
         }
       }
 
       if (row.Stock && row.Stock.trim() !== '') {
-        const stock = parseInt(row.Stock, 10);
+        const stock = parseInt(row.Stock.toString(), 10);
         if (isNaN(stock) || stock < 0) {
           errors.push({ row: rowNum, field: 'Stock', message: 'Stock must be a whole number ≥ 0', value: row.Stock });
         }
@@ -111,8 +111,8 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
               for (const row of validData) {
                 const updateData: any = {};
                 if (row.Category && row.Category.trim() !== '') updateData.category = row.Category.trim();
-                if (row.Price && row.Price.trim() !== '') updateData.price = parseFloat(row.Price);
-                if (row.Stock && row.Stock.trim() !== '') updateData.stock = parseInt(row.Stock, 10);
+                if (row.Price && row.Price.toString().trim() !== '') updateData.price = parseFloat(row.Price.toString());
+                if (row.Stock && row.Stock.toString().trim() !== '') updateData.stock = parseInt(row.Stock.toString(), 10);
 
                 if (Object.keys(updateData).length > 0) {
                   const { error: updateError } = await supabase.from('products').update(updateData).eq('id', row.ID);

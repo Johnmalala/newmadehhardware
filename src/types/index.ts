@@ -19,7 +19,6 @@ export interface Product {
 
 export interface Purchase {
   id: string;
-  date: string;
   total_amount: number;
   payment_status: 'Paid' | 'Unpaid';
   payment_method: 'M-Pesa' | 'Cash' | 'Bank Transfer' | null;

@@ -37,7 +37,7 @@ const PaymentsPage: React.FC = () => {
             username
           )
         `)
-        .order('date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPurchases(data as Purchase[]);
@@ -110,7 +110,7 @@ const PaymentsPage: React.FC = () => {
                 <tr><td colSpan={6} className="text-center py-8">Loading...</td></tr>
               ) : filteredPurchases.map(purchase => (
                 <tr key={purchase.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(purchase.date).toLocaleDateString('en-GB')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(purchase.created_at).toLocaleDateString('en-GB')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">£{purchase.total_amount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{purchase.payment_method || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{purchase.admins?.username || 'N/A'}</td>
