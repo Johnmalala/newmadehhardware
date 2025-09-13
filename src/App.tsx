@@ -11,9 +11,10 @@ const PurchasesPage = lazy(() => import('./components/Purchases/PurchasesPage'))
 const PaymentsPage = lazy(() => import('./components/Payments/PaymentsPage'));
 const ReportsPage = lazy(() => import('./components/Reports/ReportsPage'));
 const BackupPage = lazy(() => import('./components/Backup/BackupPage'));
+const SettingsPage = lazy(() => import('./components/Settings/SettingsPage'));
 
 const LoadingFallback: React.FC = () => (
-  <div className="w-full h-screen flex items-center justify-center bg-gray-100">
+  <div className="w-full h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
     <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
   </div>
 );
@@ -80,10 +81,7 @@ const AppRoutes: React.FC = () => {
           } />
           <Route path="/settings" element={
             <PrivateRoute>
-              <div className="p-6">
-                <h1 className="text-2xl font-bold">System Settings</h1>
-                <p className="text-gray-600">System settings functionality will be implemented next.</p>
-              </div>
+              <SettingsPage />
             </PrivateRoute>
           } />
           <Route path="/" element={<Navigate to="/dashboard" />} />

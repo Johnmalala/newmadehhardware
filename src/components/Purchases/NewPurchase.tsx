@@ -3,7 +3,7 @@ import { Product, CartItem } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import Toast from '../common/Toast';
-import { Search, Plus, Minus, X, ShoppingBag } from 'lucide-react';
+import { Search, Plus, Minus, X, ShoppingBag, Package, ShoppingCart as EmptyCartIcon } from 'lucide-react';
 
 const NewPurchase: React.FC = () => {
   const { admin } = useAuth();
@@ -38,6 +38,7 @@ const NewPurchase: React.FC = () => {
   };
 
   const filteredProducts = useMemo(() => {
+    if (!searchTerm) return products;
     return products.filter(p =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -144,8 +145,8 @@ const NewPurchase: React.FC = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
       {/* Left Panel: Product Selection */}
-      <div className="lg:w-1/2 bg-white rounded-lg shadow-md flex flex-col">
-        <div className="p-4 border-b">
+      <div className="flex-grow bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
+        <div className="p-4 border-b dark:border-gray-700">
           <div className="relative">
             <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
@@ -153,92 +154,102 @@ const NewPurchase: React.FC = () => {
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
         </div>
-        <div className="flex-grow overflow-y-auto">
+        <div className="flex-grow overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredProducts.map(product => (
-                <li key={product.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
-                  <div>
-                    <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">Ksh {product.price.toFixed(2)} - 
-                      <span className={`font-medium ml-1 ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {product.stock} in stock
-                      </span>
-                    </p>
+                <div key={product.id} className="border dark:border-gray-700 rounded-lg shadow-sm flex flex-col overflow-hidden transition-shadow hover:shadow-lg bg-white dark:bg-gray-800">
+                  <div className="bg-gray-100 dark:bg-gray-700 h-24 flex items-center justify-center">
+                    <Package className="w-10 h-10 text-gray-400" />
                   </div>
-                  <button
-                    onClick={() => addToCart(product)}
-                    disabled={product.stock === 0}
-                    className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add
-                  </button>
-                </li>
+                  <div className="p-3 flex-grow flex flex-col">
+                    <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm flex-grow">{product.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{product.category}</p>
+                    <p className="font-bold text-green-700 dark:text-green-400 mb-2">Ksh {product.price.toFixed(2)}</p>
+                    <p className={`text-xs font-medium mb-3 ${product.stock > 10 ? 'text-gray-500 dark:text-gray-400' : product.stock > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {product.stock} in stock
+                    </p>
+                    <button
+                      onClick={() => addToCart(product)}
+                      disabled={product.stock === 0}
+                      className="mt-auto w-full bg-green-600 text-white px-3 py-1.5 rounded-md text-sm font-semibold hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      <Plus size={16} className="mr-1" /> Add
+                    </button>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
+          )}
+          {!loading && filteredProducts.length === 0 && (
+            <div className="text-center text-gray-500 dark:text-gray-400 py-16">
+              <p>No products found for "{searchTerm}".</p>
+            </div>
           )}
         </div>
       </div>
 
       {/* Right Panel: Cart */}
-      <div className="lg:w-1/2 bg-white rounded-lg shadow-md flex flex-col">
-        <div className="p-4 border-b flex items-center">
-          <ShoppingBag className="w-6 h-6 text-green-700 mr-3" />
-          <h2 className="text-xl font-semibold text-gray-900">Current Purchase</h2>
+      <div className={`lg:flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col transition-all duration-300 ease-in-out ${cart.length > 0 ? 'lg:w-2/5' : 'lg:w-[360px]'}`}>
+        <div className="p-4 border-b dark:border-gray-700 flex items-center">
+          <ShoppingBag className="w-6 h-6 text-green-700 dark:text-green-400 mr-3" />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Current Purchase</h2>
         </div>
         <div className="flex-grow overflow-y-auto p-4">
           {cart.length === 0 ? (
-            <div className="text-center text-gray-500 py-16">
-              Your cart is empty. Add products to get started.
+            <div className="text-center text-gray-500 dark:text-gray-400 p-8 flex flex-col items-center justify-center h-full">
+              <EmptyCartIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+              <p className="font-medium">Your cart is empty</p>
+              <p className="text-sm">Add products to get started.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {cart.map(item => (
                 <li key={item.product.id} className="py-4 flex items-center">
                   <div className="flex-grow">
-                    <p className="font-medium text-gray-900">{item.product.name}</p>
-                    <p className="text-sm text-gray-500">Ksh {item.product.price.toFixed(2)}</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-200 text-sm">{item.product.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Ksh {item.product.price.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center">
-                    <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="p-1 text-gray-500 hover:text-gray-800"><Minus size={16} /></button>
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"><Minus size={16} /></button>
                     <input
                       type="number"
                       value={item.quantity}
                       onChange={(e) => updateQuantity(item.product.id, parseInt(e.target.value) || 1)}
-                      className="w-12 text-center border border-gray-300 rounded-md mx-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-12 text-center border-gray-300 dark:border-gray-600 rounded-md mx-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       min="1"
                       max={item.product.stock}
                     />
-                    <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 text-gray-500 hover:text-gray-800"><Plus size={16} /></button>
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"><Plus size={16} /></button>
                   </div>
-                  <p className="w-20 text-right font-medium">Ksh {(item.product.price * item.quantity).toFixed(2)}</p>
-                  <button onClick={() => removeFromCart(item.product.id)} className="ml-4 text-red-500 hover:text-red-700"><X size={18} /></button>
+                  <p className="w-24 text-right font-semibold text-sm dark:text-white">Ksh {(item.product.price * item.quantity).toFixed(2)}</p>
+                  <button onClick={() => removeFromCart(item.product.id)} className="ml-3 text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"><X size={16} /></button>
                 </li>
               ))}
             </ul>
           )}
         </div>
-        <div className="p-4 border-t bg-gray-50">
+        <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
           <div className="space-y-4">
-            <div className="flex justify-between items-center text-lg font-semibold">
+            <div className="flex justify-between items-center text-xl font-bold dark:text-white">
               <span>Total</span>
               <span>Ksh {cartTotal.toFixed(2)}</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Method</label>
                 <select 
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as any)}
-                  className="w-full border-gray-300 rounded-md shadow-sm"
+                  className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option>Cash</option>
                   <option>M-Pesa</option>
@@ -246,11 +257,11 @@ const NewPurchase: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Status</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Payment Status</label>
                 <select 
                   value={paymentStatus}
                   onChange={(e) => setPaymentStatus(e.target.value as any)}
-                  className="w-full border-gray-300 rounded-md shadow-sm"
+                  className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option>Paid</option>
                   <option>Unpaid</option>
@@ -260,7 +271,7 @@ const NewPurchase: React.FC = () => {
             <button
               onClick={handleCompletePurchase}
               disabled={cart.length === 0 || submitting}
-              className="w-full bg-green-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center"
+              className="w-full bg-green-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-green-700 disabled:opacity-50 flex items-center justify-center shadow-md hover:shadow-lg transition-shadow"
             >
               {submitting ? (
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>

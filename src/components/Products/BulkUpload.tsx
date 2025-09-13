@@ -141,10 +141,10 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Bulk Upload Products</h2>
-          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
+          <h2 className="text-xl font-semibold dark:text-white">Bulk Upload Products</h2>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -153,8 +153,8 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
           {!results ? (
             <>
               <div className="mb-6">
-                <h3 className="text-lg font-medium mb-3">Step 1: Download Template</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-lg font-medium mb-3 dark:text-white">Step 1: Download Template</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Download the CSV template, fill in your products, and upload it back.
                 </p>
                 <button
@@ -167,8 +167,8 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
               </div>
 
               <div className="mb-6">
-                <h3 className="text-lg font-medium mb-3">Step 2: Upload Your File</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                <h3 className="text-lg font-medium mb-3 dark:text-white">Step 2: Upload Your File</h3>
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
                   <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                   <input
                     type="file"
@@ -179,21 +179,21 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="cursor-pointer text-blue-600 hover:text-blue-700"
+                    className="cursor-pointer text-blue-600 dark:text-blue-400 hover:text-blue-700"
                   >
                     Choose CSV file or drag and drop
                   </label>
                   {file && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                       Selected: {file.name}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h4 className="font-medium text-yellow-800 mb-2">Validation Rules:</h4>
-                <ul className="text-sm text-yellow-700 space-y-1">
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Validation Rules:</h4>
+                <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
                   <li>• Name must not be empty</li>
                   <li>• Category must be valid</li>
                   <li>• Price must be positive</li>
@@ -205,7 +205,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={onCancel}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500"
                 >
                   Cancel
                 </button>
@@ -225,25 +225,25 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
             </>
           ) : (
             <div>
-              <h3 className="text-lg font-medium mb-4">Upload Results</h3>
+              <h3 className="text-lg font-medium mb-4 dark:text-white">Upload Results</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg p-4">
                   <div className="flex items-center">
-                    <CheckCircle className="w-6 h-6 text-green-600 mr-2" />
+                    <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400 mr-2" />
                     <div>
-                      <p className="font-medium text-green-800">Products Added</p>
-                      <p className="text-2xl font-bold text-green-900">{results.success}</p>
+                      <p className="font-medium text-green-800 dark:text-green-200">Products Added</p>
+                      <p className="text-2xl font-bold text-green-900 dark:text-white">{results.success}</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <div className="flex items-center">
-                    <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
+                    <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400 mr-2" />
                     <div>
-                      <p className="font-medium text-red-800">Errors Found</p>
-                      <p className="text-2xl font-bold text-red-900">{results.errors.length}</p>
+                      <p className="font-medium text-red-800 dark:text-red-200">Errors Found</p>
+                      <p className="text-2xl font-bold text-red-900 dark:text-white">{results.errors.length}</p>
                     </div>
                   </div>
                 </div>
@@ -251,10 +251,10 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
 
               {results.errors.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="font-medium text-red-800 mb-3">Error Report:</h4>
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-h-40 overflow-y-auto">
+                  <h4 className="font-medium text-red-800 dark:text-red-200 mb-3">Error Report:</h4>
+                  <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 max-h-40 overflow-y-auto">
                     {results.errors.map((error, index) => (
-                      <div key={index} className="text-sm text-red-700 mb-1">
+                      <div key={index} className="text-sm text-red-700 dark:text-red-300 mb-1">
                         Row {error.row}: {error.field} - {error.message} 
                         {error.value && <span className="font-mono ml-1">("{error.value}")</span>}
                       </div>

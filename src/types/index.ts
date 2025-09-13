@@ -49,3 +49,18 @@ export interface DashboardStats {
   unpaidPurchases: number;
   recentPurchases: Purchase[];
 }
+
+export interface AuthContextType {
+  admin: Admin | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  loading: boolean;
+  refreshAdmin: () => Promise<void>;
+}
+
+export type Theme = 'light' | 'dark' | 'system';
+
+export interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}

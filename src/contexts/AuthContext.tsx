@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Admin } from '../types';
+import { Admin, AuthContextType } from '../types';
 import { supabase } from '../lib/supabase';
-
-interface AuthContextType {
-  admin: Admin | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  loading: boolean;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -23,30 +16,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchAdminProfile = async (userId: string) => {
+    try {
+      const { data: adminProfile, error } = await supabase
+        .from('admins')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.warn('Error fetching admin profile:', error.message);
+        setAdmin(null);
+      } else {
+        setAdmin(adminProfile);
+      }
+    } catch (e) {
+      console.error('An unexpected error occurred while fetching admin profile:', e);
+      setAdmin(null);
+    }
+  };
+
+  const refreshAdmin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await fetchAdminProfile(session.user.id);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
 
-    const fetchAdminProfile = async (userId: string) => {
-      try {
-        const { data: adminProfile, error } = await supabase
-          .from('admins')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        if (error) {
-          console.warn('Error fetching admin profile:', error.message);
-          setAdmin(null);
-        } else {
-          setAdmin(adminProfile);
-        }
-      } catch (e) {
-        console.error('An unexpected error occurred while fetching admin profile:', e);
-        setAdmin(null);
-      }
-    };
-
-    // Check for initial session on app load
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         fetchAdminProfile(session.user.id).finally(() => setLoading(false));
@@ -55,7 +54,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    // Listen for auth state changes (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         fetchAdminProfile(session.user.id);
@@ -74,7 +72,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       password,
     });
-
     return !error;
   };
 
@@ -84,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ admin, login, logout, loading }}>
+    <AuthContext.Provider value={{ admin, login, logout, loading, refreshAdmin }}>
       {children}
     </AuthContext.Provider>
   );

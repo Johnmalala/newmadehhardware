@@ -39,7 +39,6 @@ const ProductsPage: React.FC = () => {
 
       setProducts(data || []);
       
-      // Extract unique categories
       const uniqueCategories = [...new Set((data || []).map(p => p.category))];
       setCategories(uniqueCategories);
     } catch (error) {
@@ -93,37 +92,37 @@ const ProductsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
+      <div className="p-4 md:p-6 flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products Management</h1>
-          <p className="text-gray-600">Manage your hardware products inventory</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Products Management</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage your hardware products inventory</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowBulkUpdate(true)}
-            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center"
+            className="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 flex items-center text-sm"
           >
             <Edit3 className="w-4 h-4 mr-2" />
             Bulk Update
           </button>
           <button
             onClick={() => setShowBulkUpload(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center"
+            className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 flex items-center text-sm"
           >
             <Upload className="w-4 h-4 mr-2" />
             Bulk Upload
           </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
+            className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 flex items-center text-sm"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Product
@@ -132,7 +131,7 @@ const ProductsPage: React.FC = () => {
       </div>
 
       {/* Search and Filter */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 md:p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -142,17 +141,17 @@ const ProductsPage: React.FC = () => {
                 placeholder="Search products by name or category..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="flex items-center flex-1">
               <Filter className="w-5 h-5 text-gray-400 mr-2" />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="">All Categories</option>
                 {categories.map(category => (
@@ -160,7 +159,7 @@ const ProductsPage: React.FC = () => {
                 ))}
               </select>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-right sm:text-left">
               {filteredProducts.length} of {products.length} products
             </div>
           </div>
@@ -174,7 +173,6 @@ const ProductsPage: React.FC = () => {
         onDelete={handleProductDeleted}
       />
 
-      {/* Add/Edit Product Modal */}
       {showAddForm && (
         <ProductForm
           product={editingProduct}
@@ -186,7 +184,6 @@ const ProductsPage: React.FC = () => {
         />
       )}
 
-      {/* Bulk Upload Modal */}
       {showBulkUpload && (
         <BulkUpload
           onComplete={handleBulkUploadComplete}
@@ -194,7 +191,6 @@ const ProductsPage: React.FC = () => {
         />
       )}
 
-      {/* Bulk Update Modal */}
       {showBulkUpdate && (
         <BulkUpdate
           onComplete={handleBulkUpdateComplete}

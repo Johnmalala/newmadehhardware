@@ -38,54 +38,54 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
   };
 
   const getStockStatus = (stock: number) => {
-    if (stock === 0) return { color: 'text-red-600', label: 'Out of Stock' };
-    if (stock <= 10) return { color: 'text-yellow-600', label: 'Low Stock' };
-    return { color: 'text-green-600', label: 'In Stock' };
+    if (stock === 0) return { color: 'text-red-600 dark:text-red-400', label: 'Out of Stock' };
+    if (stock <= 10) return { color: 'text-yellow-600 dark:text-yellow-400', label: 'Low Stock' };
+    return { color: 'text-green-600 dark:text-green-400', label: 'In Stock' };
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Product Name
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Category
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Stock
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {products.map((product) => {
               const stockStatus = getStockStatus(product.stock);
               return (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                       {product.category}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                     Ksh {product.price.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
                     {product.stock} units
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -100,7 +100,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
                     <div className="flex space-x-2">
                       <button
                         onClick={() => onEdit(product)}
-                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 p-1 hover:bg-blue-50 dark:hover:bg-gray-600 rounded"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
@@ -109,8 +109,8 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
                         disabled={deletingId === product.id}
                         className={`p-1 rounded ${
                           confirmDelete === product.id
-                            ? 'text-red-800 bg-red-100 hover:bg-red-200'
-                            : 'text-red-600 hover:text-red-900 hover:bg-red-50'
+                            ? 'text-red-800 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:text-red-200 dark:hover:bg-red-800'
+                            : 'text-red-600 dark:text-red-400 hover:text-red-900 hover:bg-red-50 dark:hover:bg-gray-600'
                         }`}
                       >
                         {deletingId === product.id ? (
@@ -121,7 +121,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
                       </button>
                     </div>
                     {confirmDelete === product.id && (
-                      <div className="text-xs text-red-600 mt-1">
+                      <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                         Click again to confirm
                       </div>
                     )}
@@ -132,7 +132,7 @@ const ProductList: React.FC<ProductListProps> = ({ products, onEdit, onDelete })
           </tbody>
         </table>
         {products.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
             No products found. Add your first product to get started.
           </div>
         )}
