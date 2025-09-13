@@ -19,7 +19,6 @@ const ReportsPage: React.FC = () => {
     const { data, error } = await supabase
       .from('purchases')
       .select('*')
-      .eq('payment_status', 'Paid') // Reports are only for paid purchases
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -49,8 +48,9 @@ const ReportsPage: React.FC = () => {
   }, [purchases, dateFilter, paymentMethodFilter]);
 
   const stats = useMemo(() => {
-    const totalSales = filteredPurchases.reduce((sum, p) => sum + p.total_amount, 0);
-    const totalPurchases = filteredPurchases.length;
+    const paidPurchases = filteredPurchases.filter(p => p.payment_status === 'Paid');
+    const totalSales = paidPurchases.reduce((sum, p) => sum + p.total_amount, 0);
+    const totalPurchases = paidPurchases.length;
     const averageSale = totalPurchases > 0 ? totalSales / totalPurchases : 0;
     return { totalSales, totalPurchases, averageSale };
   }, [filteredPurchases]);
@@ -62,6 +62,8 @@ const ReportsPage: React.FC = () => {
       'Total Amount': p.total_amount.toFixed(2),
       'Payment Method': p.payment_method,
       'Payment Status': p.payment_status,
+      'Customer Name': p.customer_name || '',
+      'Customer ID': p.customer_id_number || '',
     }));
 
     const csv = unparse(reportData);
@@ -132,14 +134,14 @@ const ReportsPage: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex items-center">
           <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-full mr-4"><DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sales</p>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Paid Sales</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">Ksh {stats.totalSales.toFixed(2)}</p>
           </div>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex items-center">
           <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-full mr-4"><ShoppingCart className="w-6 h-6 text-blue-600 dark:text-blue-400" /></div>
           <div>
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Purchases</p>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Paid Purchases</p>
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalPurchases}</p>
           </div>
         </div>
@@ -156,7 +158,7 @@ const ReportsPage: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div className="px-6 py-4 border-b dark:border-gray-700 flex items-center">
           <BarChart className="w-5 h-5 text-gray-700 dark:text-gray-300 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Sales Data</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">All Sales Data</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -165,16 +167,26 @@ const ReportsPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Payment Method</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Customer</th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
               {loading ? (
-                <tr><td colSpan={3} className="text-center py-8 dark:text-gray-400">Loading report data...</td></tr>
+                <tr><td colSpan={5} className="text-center py-8 dark:text-gray-400">Loading report data...</td></tr>
               ) : filteredPurchases.map(p => (
                 <tr key={p.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">{new Date(p.created_at).toLocaleDateString('en-GB')}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium dark:text-white">Ksh {p.total_amount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">{p.payment_method}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      p.payment_status === 'Paid' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {p.payment_status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm dark:text-gray-300">{p.customer_name || '-'}</td>
                 </tr>
               ))}
             </tbody>

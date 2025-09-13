@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Layout from './components/Layout/Layout';
 
 // Lazy load page components
+const LandingPage = lazy(() => import('./components/LandingPage'));
 const Dashboard = lazy(() => import('./components/Dashboard/Dashboard'));
 const ProductsPage = lazy(() => import('./components/Products/ProductsPage'));
 const PurchasesPage = lazy(() => import('./components/Purchases/PurchasesPage'));
@@ -40,6 +41,7 @@ const AppRoutes: React.FC = () => {
     <Router>
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
+          <Route path="/" element={admin ? <Navigate to="/dashboard" /> : <LandingPage />} />
           <Route path="/login" element={admin ? <Navigate to="/dashboard" /> : <Login />} />
           <Route path="/dashboard" element={
             <PrivateRoute>
@@ -84,7 +86,6 @@ const AppRoutes: React.FC = () => {
               <SettingsPage />
             </PrivateRoute>
           } />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </Suspense>
     </Router>

@@ -14,6 +14,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
     name: '',
     category: '',
     price: '',
+    buying_price: '',
     stock: ''
   });
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
         name: product.name,
         category: product.category,
         price: product.price.toString(),
+        buying_price: product.buying_price.toString(),
         stock: product.stock.toString()
       });
     }
@@ -43,7 +45,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
 
     const price = parseFloat(formData.price);
     if (isNaN(price) || price <= 0) {
-      newErrors.price = 'Price must be a positive number';
+      newErrors.price = 'Selling price must be a positive number';
+    }
+
+    const buyingPrice = parseFloat(formData.buying_price);
+    if (isNaN(buyingPrice) || buyingPrice <= 0) {
+      newErrors.buying_price = 'Buying price must be a positive number';
     }
 
     const stock = parseInt(formData.stock);
@@ -67,6 +74,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
         name: formData.name.trim(),
         category: formData.category.trim(),
         price: parseFloat(formData.price),
+        buying_price: parseFloat(formData.buying_price),
         stock: parseInt(formData.stock)
       };
 
@@ -110,7 +118,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Product Name *
@@ -143,22 +151,41 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
             {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Price (Ksh) *
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
-                errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-              }`}
-              placeholder="0.00"
-            />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Buying Price (Ksh) *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.buying_price}
+                onChange={(e) => setFormData({ ...formData, buying_price: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                  errors.buying_price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="0.00"
+              />
+              {errors.buying_price && <p className="text-red-500 text-sm mt-1">{errors.buying_price}</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Selling Price (Ksh) *
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white ${
+                  errors.price ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
+                placeholder="0.00"
+              />
+              {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+            </div>
           </div>
 
           <div>

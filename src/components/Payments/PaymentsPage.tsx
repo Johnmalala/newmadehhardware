@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Purchase } from '../../types';
 import { supabase } from '../../lib/supabase';
-import { Filter, Eye, DollarSign } from 'lucide-react';
+import { Filter, Eye } from 'lucide-react';
 import PurchaseDetailsModal from './PurchaseDetailsModal';
 import Toast from '../common/Toast';
 
@@ -55,7 +55,7 @@ const PaymentsPage: React.FC = () => {
   };
 
   const handleStatusUpdate = (purchaseId: string, newStatus: 'Paid' | 'Unpaid') => {
-    setPurchases(purchases.map(p => p.id === purchaseId ? { ...p, payment_status: newStatus } : p));
+    setPurchases(purchases.map(p => p.id === purchaseId ? { ...p, payment_status: newStatus, customer_name: newStatus === 'Paid' ? null : p.customer_name, customer_id_number: newStatus === 'Paid' ? null : p.customer_id_number } : p));
     setToast({ message: 'Payment status updated successfully!', type: 'success' });
     setIsModalOpen(false);
   };
@@ -100,8 +100,8 @@ const PaymentsPage: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Payment Method</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created By</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
@@ -113,8 +113,11 @@ const PaymentsPage: React.FC = () => {
               ) : filteredPurchases.map(purchase => (
                 <tr key={purchase.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{new Date(purchase.created_at).toLocaleDateString('en-GB')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
+                    {purchase.customer_name || 'N/A'}
+                    {purchase.customer_id_number && <span className="block text-xs text-gray-500 dark:text-gray-400">{purchase.customer_id_number}</span>}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">Ksh {purchase.total_amount.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">{purchase.payment_method || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{purchase.admins?.username || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

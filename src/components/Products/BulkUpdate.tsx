@@ -28,17 +28,17 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
     try {
       const { data: products } = await supabase
         .from('products')
-        .select('id, name, category, price, stock')
+        .select('id, name, category, buying_price, price, stock')
         .limit(5);
 
-      let csvContent = 'ID,Name,Category,Price,Stock\n';
+      let csvContent = 'ID,Name,Category,BuyingPrice,Price,Stock\n';
       
       if (products && products.length > 0) {
         products.forEach(product => {
-          csvContent += `"${product.id}","${product.name}","${product.category}",${product.price},${product.stock}\n`;
+          csvContent += `"${product.id}","${product.name}","${product.category}",${product.buying_price},${product.price},${product.stock}\n`;
         });
       } else {
-        csvContent += '"PRODUCT_ID_HERE","Sample Product Name","Sample Category",25.99,100\n';
+        csvContent += '"PRODUCT_ID_HERE","Sample Product Name","Sample Category",20.00,25.99,100\n';
       }
 
       const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -67,6 +67,13 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
 
       if (row.Category && row.Category.trim() === '') {
         errors.push({ row: rowNum, field: 'Category', message: 'Category cannot be an empty string if provided', value: row.Category });
+      }
+
+      if (row.BuyingPrice && row.BuyingPrice.trim() !== '') {
+        const buyingPrice = parseFloat(row.BuyingPrice.toString());
+        if (isNaN(buyingPrice) || buyingPrice <= 0) {
+          errors.push({ row: rowNum, field: 'BuyingPrice', message: 'Buying Price must be a positive number', value: row.BuyingPrice });
+        }
       }
 
       if (row.Price && row.Price.trim() !== '') {
@@ -111,6 +118,7 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
               for (const row of validData) {
                 const updateData: any = {};
                 if (row.Category && row.Category.trim() !== '') updateData.category = row.Category.trim();
+                if (row.BuyingPrice && row.BuyingPrice.toString().trim() !== '') updateData.buying_price = parseFloat(row.BuyingPrice.toString());
                 if (row.Price && row.Price.toString().trim() !== '') updateData.price = parseFloat(row.Price.toString());
                 if (row.Stock && row.Stock.toString().trim() !== '') updateData.stock = parseInt(row.Stock.toString(), 10);
 
@@ -205,9 +213,9 @@ const BulkUpdate: React.FC<BulkUpdateProps> = ({ onComplete, onCancel }) => {
                 <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Update Instructions:</h4>
                 <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                   <li>• ID column is required and must match existing products</li>
-                  <li>• Only include columns you want to update (Category, Price, Stock)</li>
+                  <li>• Only include columns you want to update (Category, BuyingPrice, Price, Stock)</li>
                   <li>• Leave cells empty to keep current values</li>
-                  <li>• Price must be positive if provided</li>
+                  <li>• Prices must be positive if provided</li>
                   <li>• Stock must be whole number ≥ 0 if provided</li>
                 </ul>
               </div>

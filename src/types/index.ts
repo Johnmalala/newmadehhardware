@@ -12,6 +12,7 @@ export interface Product {
   name: string;
   category: string;
   price: number;
+  buying_price: number;
   stock: number;
   created_at: string;
   updated_at: string;
@@ -25,6 +26,8 @@ export interface Purchase {
   created_by: string;
   created_at: string;
   updated_at: string;
+  customer_name: string | null;
+  customer_id_number: string | null;
   admins: { username: string } | null; // For joined data
 }
 
@@ -41,6 +44,7 @@ export interface PurchaseItem {
 export interface CartItem {
   product: Product;
   quantity: number;
+  price: number;
 }
 
 export interface DashboardStats {
@@ -48,6 +52,7 @@ export interface DashboardStats {
   totalSales: number;
   unpaidPurchases: number;
   recentPurchases: Purchase[];
+  lowStockItems: Product[];
 }
 
 export interface AuthContextType {

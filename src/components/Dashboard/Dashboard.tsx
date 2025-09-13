@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DashboardStats } from '../../types';
+import { DashboardStats, Product } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { Package, DollarSign, AlertCircle, Clock } from 'lucide-react';
 
@@ -8,7 +8,8 @@ const Dashboard: React.FC = () => {
     totalProducts: 0,
     totalSales: 0,
     unpaidPurchases: 0,
-    recentPurchases: []
+    recentPurchases: [],
+    lowStockItems: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +24,8 @@ const Dashboard: React.FC = () => {
         productsCountRes,
         totalSalesRes,
         unpaidCountRes,
-        recentPurchasesRes
+        recentPurchasesRes,
+        lowStockItemsRes,
       ] = await Promise.all([
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.rpc('get_total_sales'),
@@ -33,24 +35,28 @@ const Dashboard: React.FC = () => {
           admins (
             username
           )
-        `).order('created_at', { ascending: false }).limit(5)
+        `).order('created_at', { ascending: false }).limit(5),
+        supabase.from('products').select('*').lte('stock', 10).order('stock', { ascending: true }),
       ]);
 
       const { count: productsCount, error: productsError } = productsCountRes;
       const { data: totalSales, error: salesError } = totalSalesRes;
       const { count: unpaidCount, error: unpaidError } = unpaidCountRes;
       const { data: recentPurchases, error: recentError } = recentPurchasesRes;
+      const { data: lowStockItems, error: lowStockError } = lowStockItemsRes;
 
       if (productsError) console.error('Error fetching product count:', productsError);
       if (salesError) console.error('Error fetching total sales:', salesError);
       if (unpaidError) console.error('Error fetching unpaid count:', unpaidError);
       if (recentError) console.error('Error loading recent purchases:', recentError);
+      if (lowStockError) console.error('Error fetching low stock items:', lowStockError);
 
       setStats({
         totalProducts: productsCount || 0,
         totalSales: totalSales || 0,
         unpaidPurchases: unpaidCount || 0,
-        recentPurchases: recentPurchases || []
+        recentPurchases: recentPurchases || [],
+        lowStockItems: lowStockItems || [],
       });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -125,59 +131,84 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Purchases Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Purchases</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Payment Method
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {stats.recentPurchases.map((purchase) => (
-                <tr key={purchase.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                    {new Date(purchase.created_at).toLocaleDateString('en-GB')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                    Ksh {purchase.total_amount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
-                    {purchase.payment_method || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      purchase.payment_status === 'Paid' 
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    }`}>
-                      {purchase.payment_status}
-                    </span>
-                  </td>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Purchases Table */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Purchases</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {stats.recentPurchases.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              No recent purchases found
-            </div>
-          )}
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {stats.recentPurchases.map((purchase) => (
+                  <tr key={purchase.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                      {new Date(purchase.created_at).toLocaleDateString('en-GB')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
+                      Ksh {purchase.total_amount.toFixed(2)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        purchase.payment_status === 'Paid' 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}>
+                        {purchase.payment_status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {stats.recentPurchases.length === 0 && (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No recent purchases found
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Low Stock Items */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center">
+            <AlertCircle className="w-6 h-6 text-yellow-500 mr-3" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Low Stock Items</h2>
+          </div>
+          <div className="overflow-y-auto max-h-96">
+            {stats.lowStockItems.length > 0 ? (
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                {stats.lowStockItems.map((product) => (
+                  <li key={product.id} className="px-6 py-3 flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{product.category}</p>
+                    </div>
+                    <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/50 px-2 py-1 rounded-full">
+                      {product.stock} left
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                No items are currently low on stock.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

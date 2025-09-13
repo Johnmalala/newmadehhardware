@@ -15,6 +15,8 @@ const NewPurchase: React.FC = () => {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'M-Pesa' | 'Cash' | 'Bank Transfer'>('Cash');
   const [paymentStatus, setPaymentStatus] = useState<'Paid' | 'Unpaid'>('Paid');
+  const [customerName, setCustomerName] = useState('');
+  const [customerID, setCustomerID] = useState('');
 
   useEffect(() => {
     loadProducts();
@@ -50,7 +52,7 @@ const NewPurchase: React.FC = () => {
       updateQuantity(product.id, existingItem.quantity + 1);
     } else {
       if (product.stock > 0) {
-        setCart([...cart, { product, quantity: 1 }]);
+        setCart([...cart, { product, quantity: 1, price: product.price }]);
       } else {
         setToast({ message: 'This product is out of stock.', type: 'error' });
       }
@@ -72,13 +74,20 @@ const NewPurchase: React.FC = () => {
       ));
     }
   };
+  
+  const updatePrice = (productId: string, newPrice: number) => {
+    if (newPrice < 0) return;
+    setCart(cart.map(item =>
+      item.product.id === productId ? { ...item, price: newPrice } : item
+    ));
+  };
 
   const removeFromCart = (productId: string) => {
     setCart(cart.filter(item => item.product.id !== productId));
   };
 
   const cartTotal = useMemo(() => {
-    return cart.reduce((total, item) => total + item.product.price * item.quantity, 0);
+    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
   }, [cart]);
 
   const handleCompletePurchase = async () => {
@@ -90,6 +99,10 @@ const NewPurchase: React.FC = () => {
       setToast({ message: 'You must be logged in to complete a purchase.', type: 'error' });
       return;
     }
+    if (paymentStatus === 'Unpaid' && (!customerName.trim() || !customerID.trim())) {
+      setToast({ message: 'Customer Name and ID are required for unpaid purchases.', type: 'error' });
+      return;
+    }
 
     setSubmitting(true);
 
@@ -97,15 +110,19 @@ const NewPurchase: React.FC = () => {
       const itemsData = cart.map(item => ({
         product_id: item.product.id,
         quantity: item.quantity,
+        price: item.price,
       }));
 
-      const { error } = await supabase.rpc('create_purchase', {
+      const purchaseData: any = {
         items: itemsData,
         p_created_by: admin.id,
         p_payment_method: paymentMethod,
         p_payment_status: paymentStatus,
-        p_total_amount: cartTotal,
-      });
+        p_customer_name: paymentStatus === 'Unpaid' ? customerName.trim() : null,
+        p_customer_id_number: paymentStatus === 'Unpaid' ? customerID.trim() : null,
+      };
+
+      const { error } = await supabase.rpc('create_purchase', purchaseData);
 
       if (error) {
         console.error('Error completing purchase via RPC:', error);
@@ -130,6 +147,9 @@ const NewPurchase: React.FC = () => {
       } else {
         setToast({ message: 'Purchase completed successfully!', type: 'success' });
         setCart([]);
+        setCustomerName('');
+        setCustomerID('');
+        setPaymentStatus('Paid');
         loadProducts();
       }
     } catch (error) {
@@ -144,7 +164,6 @@ const NewPurchase: React.FC = () => {
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       
-      {/* Left Panel: Product Selection */}
       <div className="flex-grow bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
         <div className="p-4 border-b dark:border-gray-700">
           <div className="relative">
@@ -173,7 +192,10 @@ const NewPurchase: React.FC = () => {
                   <div className="p-3 flex-grow flex flex-col">
                     <p className="font-semibold text-gray-800 dark:text-gray-200 text-sm flex-grow">{product.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{product.category}</p>
-                    <p className="font-bold text-green-700 dark:text-green-400 mb-2">Ksh {product.price.toFixed(2)}</p>
+                    <div className="flex justify-between items-baseline mb-2">
+                        <p className="font-bold text-green-700 dark:text-green-400">Ksh {product.price.toFixed(2)}</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">Buy: {product.buying_price.toFixed(2)}</p>
+                    </div>
                     <p className={`text-xs font-medium mb-3 ${product.stock > 10 ? 'text-gray-500 dark:text-gray-400' : product.stock > 0 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                       {product.stock} in stock
                     </p>
@@ -197,7 +219,6 @@ const NewPurchase: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel: Cart */}
       <div className={`lg:flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col transition-all duration-300 ease-in-out ${cart.length > 0 ? 'lg:w-2/5' : 'lg:w-[360px]'}`}>
         <div className="p-4 border-b dark:border-gray-700 flex items-center">
           <ShoppingBag className="w-6 h-6 text-green-700 dark:text-green-400 mr-3" />
@@ -213,10 +234,19 @@ const NewPurchase: React.FC = () => {
           ) : (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {cart.map(item => (
-                <li key={item.product.id} className="py-4 flex items-center">
+                <li key={item.product.id} className="py-4 flex items-start sm:items-center flex-col sm:flex-row gap-2">
                   <div className="flex-grow">
                     <p className="font-medium text-gray-900 dark:text-gray-200 text-sm">{item.product.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Ksh {item.product.price.toFixed(2)}</p>
+                    <div className="flex items-center mt-1">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mr-1">Ksh</span>
+                      <input
+                        type="number"
+                        value={item.price}
+                        onChange={(e) => updatePrice(item.product.id, parseFloat(e.target.value) || 0)}
+                        className="w-20 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        step="0.01"
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center">
                     <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"><Minus size={16} /></button>
@@ -230,7 +260,7 @@ const NewPurchase: React.FC = () => {
                     />
                     <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600"><Plus size={16} /></button>
                   </div>
-                  <p className="w-24 text-right font-semibold text-sm dark:text-white">Ksh {(item.product.price * item.quantity).toFixed(2)}</p>
+                  <p className="w-24 text-right font-semibold text-sm dark:text-white">Ksh {(item.price * item.quantity).toFixed(2)}</p>
                   <button onClick={() => removeFromCart(item.product.id)} className="ml-3 text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"><X size={16} /></button>
                 </li>
               ))}
@@ -268,6 +298,31 @@ const NewPurchase: React.FC = () => {
                 </select>
               </div>
             </div>
+            {paymentStatus === 'Unpaid' && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg border border-yellow-200 dark:border-yellow-700 space-y-3">
+                <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Customer Details (for Unpaid Purchase)</h4>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Customer Name *</label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="e.g., John Doe"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Customer ID Number *</label>
+                  <input
+                    type="text"
+                    value={customerID}
+                    onChange={(e) => setCustomerID(e.target.value)}
+                    className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="e.g., National ID or Phone"
+                  />
+                </div>
+              </div>
+            )}
             <button
               onClick={handleCompletePurchase}
               disabled={cart.length === 0 || submitting}

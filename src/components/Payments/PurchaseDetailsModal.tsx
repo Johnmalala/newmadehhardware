@@ -50,7 +50,7 @@ const PurchaseDetailsModal: React.FC<PurchaseDetailsModalProps> = ({ isOpen, onC
     try {
       const { error } = await supabase
         .from('purchases')
-        .update({ payment_status: 'Paid' })
+        .update({ payment_status: 'Paid', customer_name: null, customer_id_number: null })
         .eq('id', purchase.id);
       
       if (error) throw error;
@@ -101,6 +101,12 @@ const PurchaseDetailsModal: React.FC<PurchaseDetailsModalProps> = ({ isOpen, onC
             <div><strong>Payment Method:</strong> {purchase.payment_method}</div>
             <div><strong>Status:</strong> <span className={`font-semibold ${purchase.payment_status === 'Paid' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{purchase.payment_status}</span></div>
             <div><strong>Created By:</strong> {purchase.admins?.username || 'N/A'}</div>
+            {purchase.payment_status === 'Unpaid' && (
+              <>
+                <div className="col-span-2 sm:col-span-1"><strong>Customer Name:</strong> {purchase.customer_name}</div>
+                <div className="col-span-2 sm:col-span-1"><strong>Customer ID:</strong> {purchase.customer_id_number}</div>
+              </>
+            )}
           </div>
           <h3 className="font-semibold mb-2 dark:text-white">Items in Purchase:</h3>
           <div className="border dark:border-gray-700 rounded-lg overflow-hidden">

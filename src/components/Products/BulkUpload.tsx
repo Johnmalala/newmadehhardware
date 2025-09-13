@@ -24,11 +24,11 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
   } | null>(null);
 
   const downloadTemplate = () => {
-    const csvContent = `Name,Category,Price,Stock
-"Hammer, Claw","Tools",15.99,50
-"Screwdriver Set (10pc)","Tools",25.50,30
-"Nails, 1kg pack","Fasteners",8.75,100
-"Wire Strippers, Professional","Electrical",22.00,25`;
+    const csvContent = `Name,Category,BuyingPrice,Price,Stock
+"Hammer, Claw","Tools",10.50,15.99,50
+"Screwdriver Set (10pc)","Tools",18.00,25.50,30
+"Nails, 1kg pack","Fasteners",5.25,8.75,100
+"Wire Strippers, Professional","Electrical",15.00,22.00,25`;
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -61,6 +61,11 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
 
       if (!row.Category || row.Category.trim() === '') {
         errors.push({ row: rowNum, field: 'Category', message: 'Category must not be empty', value: row.Category || '' });
+      }
+
+      const buyingPrice = row.BuyingPrice ? parseFloat(row.BuyingPrice) : NaN;
+      if (isNaN(buyingPrice) || buyingPrice <= 0) {
+        errors.push({ row: rowNum, field: 'BuyingPrice', message: 'Buying Price must be a positive number', value: row.BuyingPrice || '' });
       }
 
       const price = row.Price ? parseFloat(row.Price) : NaN;
@@ -103,6 +108,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
               const productsToInsert = validData.map(row => ({
                 name: row.Name.trim(),
                 category: row.Category.trim(),
+                buying_price: parseFloat(row.BuyingPrice),
                 price: parseFloat(row.Price),
                 stock: parseInt(row.Stock, 10)
               }));
@@ -196,7 +202,7 @@ const BulkUpload: React.FC<BulkUploadProps> = ({ onComplete, onCancel }) => {
                 <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
                   <li>• Name must not be empty</li>
                   <li>• Category must be valid</li>
-                  <li>• Price must be positive</li>
+                  <li>• Buying Price and Price must be positive</li>
                   <li>• Stock must be whole number ≥ 0</li>
                   <li>• Duplicate product names will be flagged</li>
                 </ul>
