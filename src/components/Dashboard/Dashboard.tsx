@@ -18,44 +18,37 @@ const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     try {
-      // Get total products
-      const { count: productsCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
-
-      // Get total sales (paid purchases)
-      const { data: salesData } = await supabase
-        .from('purchases')
-        .select('total_amount')
-        .eq('payment_status', 'Paid');
-
-      const totalSales = salesData?.reduce((sum, purchase) => sum + purchase.total_amount, 0) || 0;
-
-      // Get unpaid purchases count
-      const { count: unpaidCount } = await supabase
-        .from('purchases')
-        .select('*', { count: 'exact', head: true })
-        .eq('payment_status', 'Unpaid');
-
-      // Get recent purchases
-      const { data: recentPurchases, error: recentError } = await supabase
-        .from('purchases')
-        .select(`
+      setLoading(true);
+      const [
+        productsCountRes,
+        totalSalesRes,
+        unpaidCountRes,
+        recentPurchasesRes
+      ] = await Promise.all([
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.rpc('get_total_sales'),
+        supabase.from('purchases').select('*', { count: 'exact', head: true }).eq('payment_status', 'Unpaid'),
+        supabase.from('purchases').select(`
           *,
           admins (
             username
           )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(5);
+        `).order('created_at', { ascending: false }).limit(5)
+      ]);
 
-      if (recentError) {
-        console.error('Error loading recent purchases:', recentError);
-      }
+      const { count: productsCount, error: productsError } = productsCountRes;
+      const { data: totalSales, error: salesError } = totalSalesRes;
+      const { count: unpaidCount, error: unpaidError } = unpaidCountRes;
+      const { data: recentPurchases, error: recentError } = recentPurchasesRes;
+
+      if (productsError) console.error('Error fetching product count:', productsError);
+      if (salesError) console.error('Error fetching total sales:', salesError);
+      if (unpaidError) console.error('Error fetching unpaid count:', unpaidError);
+      if (recentError) console.error('Error loading recent purchases:', recentError);
 
       setStats({
         totalProducts: productsCount || 0,
-        totalSales,
+        totalSales: totalSales || 0,
         unpaidPurchases: unpaidCount || 0,
         recentPurchases: recentPurchases || []
       });
@@ -102,7 +95,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Sales</p>
-              <p className="text-2xl font-bold text-gray-900">£{stats.totalSales.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-gray-900">Ksh {stats.totalSales.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -162,7 +155,7 @@ const Dashboard: React.FC = () => {
                     {new Date(purchase.created_at).toLocaleDateString('en-GB')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    £{purchase.total_amount.toFixed(2)}
+                    Ksh {purchase.total_amount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {purchase.payment_method || 'N/A'}

@@ -145,7 +145,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) 
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Price (£) *
+              Price (Ksh) *
             </label>
             <input
               type="number"

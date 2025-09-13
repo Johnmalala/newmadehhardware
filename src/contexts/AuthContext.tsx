@@ -24,16 +24,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAdminProfile = async (email: string) => {
+    setLoading(true);
+
+    const fetchAdminProfile = async (userId: string) => {
       try {
         const { data: adminProfile, error } = await supabase
           .from('admins')
           .select('*')
-          .eq('username', email)
-          .maybeSingle();
+          .eq('id', userId)
+          .single();
 
         if (error) {
-          console.error('Error fetching admin profile:', error);
+          console.warn('Error fetching admin profile:', error.message);
           setAdmin(null);
         } else {
           setAdmin(adminProfile);
@@ -43,15 +45,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAdmin(null);
       }
     };
-    
-    // onAuthStateChange handles the initial session check and any subsequent changes.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user?.email) {
-        await fetchAdminProfile(session.user.email);
+
+    // Check for initial session on app load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchAdminProfile(session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth state changes (login/logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchAdminProfile(session.user.id);
       } else {
         setAdmin(null);
       }
-      setLoading(false);
     });
 
     return () => {

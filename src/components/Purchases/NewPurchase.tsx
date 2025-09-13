@@ -93,52 +93,47 @@ const NewPurchase: React.FC = () => {
     setSubmitting(true);
 
     try {
-      // Create the purchase record
-      const { data: purchaseData, error: purchaseError } = await supabase
-        .from('purchases')
-        .insert({
-          total_amount: cartTotal,
-          payment_method: paymentMethod,
-          payment_status: paymentStatus,
-          created_by: admin.id
-        })
-        .select()
-        .single();
-
-      if (purchaseError) throw purchaseError;
-
-      // Create purchase items
-      const purchaseItems = cart.map(item => ({
-        purchase_id: purchaseData.id,
+      const itemsData = cart.map(item => ({
         product_id: item.product.id,
         quantity: item.quantity,
-        price: item.product.price
       }));
 
-      const { error: itemsError } = await supabase
-        .from('purchase_items')
-        .insert(purchaseItems);
+      const { error } = await supabase.rpc('create_purchase', {
+        items: itemsData,
+        p_created_by: admin.id,
+        p_payment_method: paymentMethod,
+        p_payment_status: paymentStatus,
+        p_total_amount: cartTotal,
+      });
 
-      if (itemsError) throw itemsError;
-
-      // Update product stock
-      for (const item of cart) {
-        const newStock = item.product.stock - item.quantity;
-        const { error: stockError } = await supabase
-          .from('products')
-          .update({ stock: newStock })
-          .eq('id', item.product.id);
-
-        if (stockError) throw stockError;
+      if (error) {
+        console.error('Error completing purchase via RPC:', error);
+        let userMessage = 'An error occurred during the purchase.';
+        
+        if (error.message.includes('Not enough stock for product ID')) {
+            const match = error.message.match(/product ID ([\w-]+)/);
+            if (match && match[1]) {
+                const productId = match[1];
+                const productName = products.find(p => p.id === productId)?.name;
+                userMessage = productName
+                  ? `Purchase failed: Not enough stock for "${productName}".`
+                  : 'Purchase failed: Insufficient stock for an item.';
+            } else {
+                 userMessage = 'Purchase failed: Insufficient stock for one or more items.';
+            }
+        } else if (error.message.includes('stock')) {
+            userMessage = 'Purchase failed: Insufficient stock for one or more items.';
+        }
+        
+        setToast({ message: userMessage, type: 'error' });
+      } else {
+        setToast({ message: 'Purchase completed successfully!', type: 'success' });
+        setCart([]);
+        loadProducts();
       }
-
-      setToast({ message: 'Purchase completed successfully!', type: 'success' });
-      setCart([]);
-      loadProducts(); // Refresh product list to show updated stock
-
     } catch (error) {
-      console.error('Error completing purchase:', error);
-      setToast({ message: 'An error occurred during the purchase.', type: 'error' });
+      console.error('Unexpected error completing purchase:', error);
+      setToast({ message: 'A client-side error occurred.', type: 'error' });
     } finally {
       setSubmitting(false);
     }
@@ -173,7 +168,7 @@ const NewPurchase: React.FC = () => {
                 <li key={product.id} className="p-4 flex justify-between items-center hover:bg-gray-50">
                   <div>
                     <p className="font-medium text-gray-900">{product.name}</p>
-                    <p className="text-sm text-gray-600">£{product.price.toFixed(2)} - 
+                    <p className="text-sm text-gray-600">Ksh {product.price.toFixed(2)} - 
                       <span className={`font-medium ml-1 ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
                         {product.stock} in stock
                       </span>
@@ -210,7 +205,7 @@ const NewPurchase: React.FC = () => {
                 <li key={item.product.id} className="py-4 flex items-center">
                   <div className="flex-grow">
                     <p className="font-medium text-gray-900">{item.product.name}</p>
-                    <p className="text-sm text-gray-500">£{item.product.price.toFixed(2)}</p>
+                    <p className="text-sm text-gray-500">Ksh {item.product.price.toFixed(2)}</p>
                   </div>
                   <div className="flex items-center">
                     <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="p-1 text-gray-500 hover:text-gray-800"><Minus size={16} /></button>
@@ -224,7 +219,7 @@ const NewPurchase: React.FC = () => {
                     />
                     <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 text-gray-500 hover:text-gray-800"><Plus size={16} /></button>
                   </div>
-                  <p className="w-20 text-right font-medium">£{(item.product.price * item.quantity).toFixed(2)}</p>
+                  <p className="w-20 text-right font-medium">Ksh {(item.product.price * item.quantity).toFixed(2)}</p>
                   <button onClick={() => removeFromCart(item.product.id)} className="ml-4 text-red-500 hover:text-red-700"><X size={18} /></button>
                 </li>
               ))}
@@ -235,7 +230,7 @@ const NewPurchase: React.FC = () => {
           <div className="space-y-4">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total</span>
-              <span>£{cartTotal.toFixed(2)}</span>
+              <span>Ksh {cartTotal.toFixed(2)}</span>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

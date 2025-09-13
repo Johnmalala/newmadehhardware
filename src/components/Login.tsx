@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Store } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,8 +28,8 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-xl p-8">
           <div className="text-center mb-8">
-            <div className="mx-auto w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-4">
-              <Store className="w-10 h-10 text-white" />
+            <div className="mx-auto w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mb-4 text-white font-bold text-3xl border-4 border-white shadow-md">
+              MH
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Madeh Hardware</h1>
             <p className="text-gray-600 mt-1">Management System</p>

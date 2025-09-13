@@ -111,7 +111,7 @@ const PaymentsPage: React.FC = () => {
               ) : filteredPurchases.map(purchase => (
                 <tr key={purchase.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(purchase.created_at).toLocaleDateString('en-GB')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">£{purchase.total_amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Ksh {purchase.total_amount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{purchase.payment_method || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{purchase.admins?.username || 'N/A'}</td>
                   <td className="px-6 py-4 whitespace-nowrap">

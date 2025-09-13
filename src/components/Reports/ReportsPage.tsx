@@ -133,7 +133,7 @@ const ReportsPage: React.FC = () => {
           <div className="p-3 bg-green-100 rounded-full mr-4"><DollarSign className="w-6 h-6 text-green-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">Total Sales</p>
-            <p className="text-2xl font-bold text-gray-900">£{stats.totalSales.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900">Ksh {stats.totalSales.toFixed(2)}</p>
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-md p-6 flex items-center">
@@ -147,7 +147,7 @@ const ReportsPage: React.FC = () => {
           <div className="p-3 bg-purple-100 rounded-full mr-4"><TrendingUp className="w-6 h-6 text-purple-600" /></div>
           <div>
             <p className="text-sm font-medium text-gray-600">Average Sale Value</p>
-            <p className="text-2xl font-bold text-gray-900">£{stats.averageSale.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-gray-900">Ksh {stats.averageSale.toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -173,7 +173,7 @@ const ReportsPage: React.FC = () => {
               ) : filteredPurchases.map(p => (
                 <tr key={p.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(p.created_at).toLocaleDateString('en-GB')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">£{p.total_amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">Ksh {p.total_amount.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{p.payment_method}</td>
                 </tr>
               ))}

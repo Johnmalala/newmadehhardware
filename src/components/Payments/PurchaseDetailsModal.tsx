@@ -97,7 +97,7 @@ const PurchaseDetailsModal: React.FC<PurchaseDetailsModalProps> = ({ isOpen, onC
         <div>
           <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
             <div><strong>Date:</strong> {new Date(purchase.created_at).toLocaleString('en-GB')}</div>
-            <div><strong>Total:</strong> <span className="font-bold text-lg">£{purchase.total_amount.toFixed(2)}</span></div>
+            <div><strong>Total:</strong> <span className="font-bold text-lg">Ksh {purchase.total_amount.toFixed(2)}</span></div>
             <div><strong>Payment Method:</strong> {purchase.payment_method}</div>
             <div><strong>Status:</strong> <span className={`font-semibold ${purchase.payment_status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>{purchase.payment_status}</span></div>
             <div><strong>Created By:</strong> {purchase.admins?.username || 'N/A'}</div>
@@ -120,8 +120,8 @@ const PurchaseDetailsModal: React.FC<PurchaseDetailsModalProps> = ({ isOpen, onC
                     <td className="px-4 py-2 whitespace-nowrap text-sm">{item.products?.name}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm">{item.products?.category}</td>
                     <td className="px-4 py-2 whitespace-nowrap text-sm text-right">{item.quantity}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right">£{item.price.toFixed(2)}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">£{(item.quantity * item.price).toFixed(2)}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right">Ksh {item.price.toFixed(2)}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">Ksh {(item.quantity * item.price).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
